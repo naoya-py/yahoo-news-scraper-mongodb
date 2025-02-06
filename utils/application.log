@@ -1,0 +1,2 @@
+2025-02-06 16:33:13 | DEBUG | parser:<module>:20 | Detected encoding for pn.csv.m3.120408.trim: utf-8
+2025-02-06 16:33:13 | ERROR | parser:<module>:29 | 感情語辞書の読み込み中にエラーが発生しました: not enough values to unpack (expected 2, got 1)

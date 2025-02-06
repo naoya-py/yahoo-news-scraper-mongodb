@@ -1,0 +1,38 @@
+scraper/
+├── venv/                   # PyCharmで作成した仮想環境
+├── scrapers/               # スクレイピングモジュール
+│   ├── __init__.py
+│   ├── yahoo_news/         # Yahoo!ニュースのスクレイピング
+│   │   └── yahoo_news.py
+│   └── rakuten/            # 楽天市場のスクレイピング (例)
+│       └── product.py
+├── utils/                  # ユーティリティ
+│   ├── __init__.py
+│   ├── parser.py            # HTML解析
+│   ├── database.py         # データベース接続
+│   ├── network.py          # ネットワーク関連
+│   └── data_converter.py   # データ変換
+├── models/                 # データモデル
+│   ├── __init__.py
+│   └── article.py          # 記事データモデル
+├── change_detection/       # 変更検知モジュール
+│   ├── __init__.py
+│   ├── detector.py         # 変更検知処理
+│   └── notifier.py          # 通知処理
+├── scheduler/              # スケジューラ
+│   ├── __init__.py
+│   └── tasks.py            # スケジュールタスク定義
+├── dashboard/              # ダッシュボードモジュール
+│   ├── __init__.py
+│   └── app.py              # Streamlitアプリケーション
+├── logging/                # ロギングモジュール
+│   ├── __init__.py
+│   └── logger.py           # ロガー設定
+├── tests/                  # テストコード
+│   ├── __init__.py
+│   ├── yahoo_news/         # Yahoo!ニュースのテスト
+│   │   └── test_yahoo_news.py
+│   └── rakuten/            # 楽天市場のテスト (例)
+│       └── test_product.py
+├── main.py                 # メインスクリプト
+└── config.py    
