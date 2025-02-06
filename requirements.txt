@@ -19,3 +19,4 @@ matplotlib
 seaborn
 scikit-learn
 langdetect
+plotly

@@ -21,3 +21,8 @@ yahoo_SELECTORS = {
     "article_data_p": '#uamods div.article_body.highLightSearchTarget p, #uamods-article > div:nth-child(1) > section > div p',
     "article_data_time": '#uamods > header > div > div > p > time, #uamods-article > div:nth-child(1) > header > div > div.sc-1fea4ol-4.cbpbKO > div.sc-1fea4ol-7.bOXKxM > time',
 }
+
+# Slackの設定
+SLACK_WEBHOOK_URL = os.environ.get("SLAKC_WEBHOOK_URL", "https://hooks.slack.com/services/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")
+
+SCRAPE_INTERVAL = 1
