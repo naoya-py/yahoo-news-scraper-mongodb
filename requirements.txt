@@ -18,3 +18,4 @@ pandas
 matplotlib
 seaborn
 scikit-learn
+langdetect

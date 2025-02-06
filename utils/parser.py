@@ -1,32 +1,15 @@
-import re
 import html
 import unicodedata
 from bs4 import BeautifulSoup
 import datetime
 import MeCab
-import csv
 from loggings.logger import get_logger
-import pandas as pd
-import csv
 import re
+from langdetect import detect, LangDetectException
 
 mecab = MeCab.Tagger("-Ochasen")
 logger = get_logger(__name__)
 
-# 感情語辞書の読み込み
-with open('pn.csv.m3.120408.trim', 'r', encoding='utf-8') as infile, open('cleaned.csv', 'w', encoding='utf-8', newline='') as outfile:
-    reader = csv.reader(infile, delimiter='\t') # 一旦タブ区切りで読み込み
-    writer = csv.writer(outfile, delimiter='\t')
-
-    for row in reader:
-        try:
-            new_row = [re.sub(r'[^\x00-\x7F\u3000-\u30FF\u4E00-\u9FFF\uF900-\uFAFF\uFF01-\uFF5E]+', '', cell) for cell in row[:2]] # 不正な文字を削除し、2列目まで取得
-            if all(new_row): # 空のセルがないことを確認
-                writer.writerow(new_row)
-        except Exception as e:
-            print(f"Error processing row: {row}, Error: {e}")
-
-df_dic = pd.read_csv('cleaned.csv', sep='\t', names=("名詞", "判定"), encoding='utf-8')
 
 def remove_html_tags(text):
     """
@@ -136,40 +119,8 @@ def detect_language(text):
     Returns:
         str: 判定された言語
     """
-    # TODO: NLTKを使って言語判定を実装
-    pass
-
-
-def analyze_sentiment(text):
-    """
-    感情分析を行う
-
-    Args:
-        text: 感情分析対象のテキスト
-
-    Returns:
-        dict: 感情分析結果。辞書が見つからない場合はNoneを返す。
-    """
-    logger.debug(f"analyze_sentiment 関数が呼ばれました。text={text[:50]}...")
-    if not df_dic:  # 辞書が空の場合
-        logger.debug(f"analyze_sentiment 関数が終了しました。result=None")
+    try:
+        language_code = detect(text)
+        return language_code
+    except LangDetectException:
         return None
-
-    node = mecab.parseToNode(text)
-    score = 0
-    while node:
-        word = node.surface
-        if word in df_dic:
-            score += df_dic[word]
-        node = node.next
-
-    # スコアに基づいて感情を判定。しきい値は調整可能。
-    if score > 0.5:
-        sentiment = "positive"
-    elif score < -0.5:
-        sentiment = "negative"
-    else:
-        sentiment = "neutral"
-    result = {"sentiment": sentiment, "score": score}
-    logger.debug(f"analyze_sentiment 関数が終了しました。result={result}")
-    return result
