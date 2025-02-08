@@ -1,7 +1,9 @@
 import atexit
-from pymongo import MongoClient, ReturnDocument
+from pymongo import MongoClient, ReturnDocument, ASCENDING
 from config import MONGODB_URI, MONGODB_DB
 from loggings.logger import get_logger
+from typing import Union
+from models.article import Article
 
 logger = get_logger(__name__)
 _client = None
@@ -13,8 +15,15 @@ def get_database():
         try:
             _client = MongoClient(MONGODB_URI, maxPoolSize=50, minPoolSize=5, maxIdleTimeMS=300000)
             logger.info("MongoDB に接続しました。")
+
+            # インデックスを作成
+            db = _client[MONGODB_DB]
+            collection = db["news_paper"] # コレクション名を指定
+            collection.create_index([("url", ASCENDING)], unique=True, background=True)
+            logger.info("URLのユニークインデックスを作成しました。")
+
         except Exception as e:
-            logger.error(f"MongoDB への接続に失敗しました: {e}")
+            logger.error(f"MongoDB への接続、またはインデックスの作成に失敗しました: {e}")
             raise  # 例外を再送出
 
     try:
@@ -23,12 +32,12 @@ def get_database():
         logger.error(f"データベースの取得に失敗しました: {e}")
         raise
 
-def save_data(data, collection_name: str):  # news_paperに型ヒントを追加
+def save_data(data: Union[Article, dict], collection_name: str):
     """データをMongoDBに保存する
 
     Args:
-        news_paper: コレクション名（新聞名）
-        data: 保存するデータ (辞書)
+        data: 保存するデータ (Articleオブジェクトまたは辞書)
+        collection_name: コレクション名
 
     Returns:
         bool: True if successful, False otherwise.
@@ -36,13 +45,24 @@ def save_data(data, collection_name: str):  # news_paperに型ヒントを追加
     db = get_database()
     try:
         collection = db[collection_name]
-        result = collection.insert_one(data)
+
+        if isinstance(data, Article):
+            data_dict = data.model_dump()
+            data_dict['url'] = str(data_dict['url'])
+            # Articleオブジェクトを辞書に変換
+        elif isinstance(data, dict):
+            data_dict = data
+        else:
+            logger.error(f"無効なデータ型: {type(data)}")
+            return False
+
+        result = collection.insert_one(data_dict)
         logger.info(f"データが保存されました。collection={collection_name}, inserted_id={result.inserted_id}")
-        return True  # 成功を示す値を返す
+        return True
 
     except Exception as e:
         logger.error(f"データの保存に失敗しました: {e}")
-        return False  # 失敗を示す値を返す
+        return False
 
 def update_data(news_paper: str, filter_query: dict, update_data: dict, upsert: bool = False):  # 型ヒントを追加
     """データを更新する

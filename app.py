@@ -6,12 +6,12 @@ import datetime
 import os
 from utils.database import get_database
 from scheduler import tasks
-
+from tests.yahoo.test_yahoo_news import scrape_yahoo_news
 # タイトルを表示
 st.title('Webスクレイピングダッシュボード')
 
 # サイドバーにメニューを追加
-menu = st.sidebar.selectbox("メニュー", ["データの可視化", "システム監視"])
+menu = st.sidebar.selectbox("メニュー", ["データの可視化", "システム監視", "スクレイピング実行"])
 
 if menu == "データの可視化":
     st.header("データの可視化")
@@ -60,6 +60,16 @@ if menu == "データの可視化":
     else:
         st.info("データがありません。")
 
+elif menu == "スクレイピング実行": # 新しいメニューを追加
+    st.header("スクレイピング実行")
+
+    if st.button("Yahoo!ニュースをスクレイピング"): # ボタンを追加
+        with st.spinner('スクレイピング実行中...'):
+            try:
+                scrape_yahoo_news()
+                st.success('スクレイピング完了！')
+            except Exception as e:
+                st.error(f"エラーが発生しました: {e}")
 
 elif menu == "システム監視":
     st.header("システム監視")

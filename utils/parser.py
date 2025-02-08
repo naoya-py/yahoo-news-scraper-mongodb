@@ -2,12 +2,10 @@ import html
 import unicodedata
 from bs4 import BeautifulSoup
 import datetime
-import MeCab
 from loggings.logger import get_logger
 import re
 from langdetect import detect, LangDetectException
 
-mecab = MeCab.Tagger("-Ochasen")
 logger = get_logger(__name__)
 
 

@@ -20,6 +20,15 @@ yahoo_SELECTORS = {
     "article_data_h1": '#uamods > header > h1, #uamods div.article_body.highLightSearchTarget p',
     "article_data_p": '#uamods div.article_body.highLightSearchTarget p, #uamods-article > div:nth-child(1) > section > div p',
     "article_data_time": '#uamods > header > div > div > p > time, #uamods-article > div:nth-child(1) > header > div > div.sc-1fea4ol-4.cbpbKO > div.sc-1fea4ol-7.bOXKxM > time',
+    "comment": '#uamods > header > div > div > div.sc-1n9vtw0-0.hLzvcB > button:nth-child(1) > span',
+    "author": '#uamods > footer > a, #contentsWrap > div > div > div > div.sc-150e8y2-2.fEbFen > div > div > a',
+    "updated_at": '#uamods > footer > div > time',
+    "article_data_p_link": '#uamods > div.sc-brfqoi-0.iHxBOa > div > ul > li:last-child a'
+}
+
+SITEURL = {
+    "yahoo_top": 'https://news.yahoo.co.jp/',
+    "yahoo_link": 'https://news.yahoo.co.jp/topics/top-picks'
 }
 
 # Slackの設定
