@@ -75,10 +75,7 @@ def parse_datetime_from_html(html_snippet):
     複数のdatetimeフォーマットに対応。
     """
     logger.debug(f"parse_datetime_from_html 関数が呼ばれました。html_snippet={html_snippet[:50]}...")
-    formats = [
-        r"(\d+)/(\d+)\(.+?\)\s*(\d+):(\d+)",  # "2/2(日) 20:15"
-        r"(\d+)年(\d+)月(\d+)日(\d+)時(\d+)分",  # "2025年2月4日19時35分"
-    ]
+    formats = [r"(\d+)/(\d+)\(.+?\)\s*(\d+):(\d+)"]
     for fmt in formats:
         match = re.search(fmt, html_snippet)
         if match:
