@@ -1,4 +1,8 @@
 import os
+from dotenv import load_dotenv
+
+# .envファイルを読み込む
+load_dotenv()
 
 # ログの設定
 LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO").upper()
@@ -9,8 +13,8 @@ LOG_RETENTION = os.environ.get("LOG_RETENTION", "7 days")
 LOG_ENCODING = os.environ.get("LOG_ENCODING", "utf-8")
 
 # MongoDB の設定
-MONGODB_URI = os.environ.get("MONGODB_URI", "mongodb://localhost:27017/")
-MONGODB_DB = os.environ.get("MONGODB_DB", "news_py")
+MONGODB_URI = os.environ.get("MONGODB_URI")
+MONGODB_DB = os.environ.get("MONGODB_DB")
 
 # CSS セレクタの設定
 # セレクタをカテゴリ分けして整理。可読性と保守性を向上。
@@ -42,7 +46,7 @@ SITEURL = {
 
 # Slack の設定
 # "SLAKC_WEBHOOK_URL" はtypoの可能性があるので、"SLACK_WEBHOOK_URL" に修正
-SLACK_WEBHOOK_URL = os.environ.get("SLACK_WEBHOOK_URL", "https://hooks.slack.com/services/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") # ダミーURLは良くないので、変数設定されていなければNoneにする
+SLACK_WEBHOOK_URL = os.environ.get("SLACK_WEBHOOK_URL") # ダミーURLは良くないので、変数設定されていなければNoneにする
 
 SCRAPE_INTERVAL = 1 # 用途が不明瞭なので、一旦残すが、使用箇所で意味のある名前に変更する
 

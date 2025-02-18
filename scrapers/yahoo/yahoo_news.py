@@ -262,4 +262,4 @@ def scrape_yahoo_news(headless=False, max_pages=100):
 
 
 if __name__ == "__main__":
-    scrape_yahoo_news(headless=True, max_pages=5)
+    scrape_yahoo_news(headless=True, max_pages=40)

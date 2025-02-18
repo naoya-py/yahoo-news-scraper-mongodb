@@ -6,7 +6,7 @@ import datetime
 import os
 from utils.database import get_database
 from scheduler import tasks
-from tests.yahoo.test_yahoo_news import scrape_yahoo_news
+from tests.yahoo.yahoo_news import scrape_yahoo_news
 # タイトルを表示
 st.title('Webスクレイピングダッシュボード')
 
