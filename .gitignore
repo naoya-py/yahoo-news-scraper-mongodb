@@ -1,2 +1,2 @@
-.env
+/.env
 scrapers/yahoo/page_hashes.json
