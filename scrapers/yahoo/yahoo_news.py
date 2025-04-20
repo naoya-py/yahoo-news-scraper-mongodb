@@ -12,10 +12,13 @@ from change_detection import detector
 from models.article import Article
 import time
 import random
+import os
+from datetime import datetime
+from scrapers.utils.selector_utils import SelectorUtils
 
 logger = get_logger(__name__)
 
-def clean_text(text):
+def clean_text(text)
     """テキストをクレンジングするヘルパー関数"""
     if not text:
         return ""
@@ -39,49 +42,85 @@ def scrape_and_save_article(page, url, additional_texts=None):
 @retry(tries=3, delay=5, backoff=2, logger=logger)
 def scrape_article_data(page, url, additional_texts=None):
     """
-    記事の詳細データをスクレイピングする関数。リトライ処理付き。
-    additional_texts: 分割された記事のテキストリスト (オプション)
+    Yahooニュース記事ページからデータを抽出する関数（セレクタ冗長化・スナップショット機能付き）
     """
     try:
-        if url is None:
-            logger.warning("URL が None のため、記事データの取得をスキップします。")
-            return None
+        # セレクタ候補リスト
+        h1_selectors = [
+            "#uamods > header > h1",
+            "#uamods div.article_body.highLightSearchTarget p",
+            "#uamods-article > div:nth-child(1) > header > h1"
+        ]
+        time_selectors = [
+            "#uamods > header > div > div > p > time",
+            "#uamods-article > div:nth-child(1) > header > div > div.sc-1fea4ol-4.cbpbKO > div.sc-1fea4ol-7.bOXKxM > time"
+        ]
+        author_selectors = [
+            "#uamods > footer > a",
+            "#contentsWrap > div > div > div > div.sc-150e8y2-2.fEbFen > div > div > a"
+        ]
+        comment_selectors = [
+            "#uamods > header > div > div > div.sc-1n9vtw0-0.hLzvcB > button:nth-child(1) > span"
+        ]
+        p_selectors = [
+            "#uamods div.article_body.highLightSearchTarget p",
+            "#uamods-article > div:nth-child(1) > section > div p",
+            "#uamods > div.article_body.highLightSearchTarget > div:nth-child(1) > p"
+        ]
 
-        h1_element = page.locator(yahoo_SELECTORS["article_content"]["article_data_h1"]).first
-        h1_text = clean_text(h1_element.inner_html()) if h1_element and h1_element.is_visible() else ""
+        h1_element = try_multiple_selectors(page, h1_selectors)
+        if h1_element:
+            h1_text = clean_text(h1_element.inner_html())
+        else:
+            logger.warning(f"h1要素が見つかりません: {url}")
+            save_html_snapshot(page, url, "h1_missing")
+            h1_text = ""
 
-        coment_element = page.locator(yahoo_SELECTORS["article_content"]["comment"]).first
-        coment_text = clean_text(coment_element.inner_html()) if coment_element and coment_element.is_visible() else ""
+        coment_element = try_multiple_selectors(page, comment_selectors)
+        coment_text = clean_text(coment_element.inner_html()) if coment_element else ""
 
-        author_element = page.locator(yahoo_SELECTORS["article_content"]["author"]).first
-        author_text = clean_text(author_element.inner_html()) if author_element and author_element.is_visible() else ""
+        author_element = try_multiple_selectors(page, author_selectors)
+        author_text = clean_text(author_element.inner_html()) if author_element else ""
 
         # time 要素の取得とエラーハンドリング
-        time_element = page.locator(yahoo_SELECTORS["article_content"]["article_data_time"]).first
-        if time_element and time_element.is_visible():
+        time_element = try_multiple_selectors(page, time_selectors)
+        if time_element:
             time_text = clean_text(time_element.inner_html())
             datetime_object = parse_datetime_from_html(time_text) if time_text else None
             formattime = format_datetime(datetime_object) if datetime_object else None
         else:
-            logger.warning(f"time要素が見つかりません: {url}")  # ログ出力
+            logger.warning(f"time要素が見つかりません: {url}")
+            save_html_snapshot(page, url, "time_missing")
             formattime = None
 
-        # updated_at 要素の取得とエラーハンドリング
-        updated_at_element = page.locator(yahoo_SELECTORS["article_content"]["article_data_time"]).first # time要素と同じセレクタになっているので注意
-        if updated_at_element and updated_at_element.is_visible():
+        # updated_atも同様に対応させる
+        updated_at_element = try_multiple_selectors(page, time_selectors)  # 例としてtime_selectorsを流用
+        if updated_at_element:
             updated_at_text = clean_text(updated_at_element.inner_html())
             updated_object = parse_datetime_from_html(updated_at_text) if updated_at_text else None
             updated_at_formattime = format_datetime(updated_object) if updated_object else None
         else:
-            logger.warning(f"updated_at要素が見つかりません: {url}")  # ログ出力
+            logger.warning(f"updated_at要素が見つかりません: {url}")
+            save_html_snapshot(page, url, "updated_at_missing")
             updated_at_formattime = None
 
+        # p要素をすべて取得
         p_texts = []
-        for p in page.locator(yahoo_SELECTORS["article_content"]["article_data_p"]).all():
-            if p.is_visible():
-                p_text = clean_text(p.inner_html())
-                if p_text:
-                    p_texts.append(p_text)
+        found_p = False
+        for selector in p_selectors:
+            p_elements = page.locator(selector).all()
+            if p_elements:
+                for p in p_elements:
+                    if p.is_visible():
+                        p_text = clean_text(p.inner_html())
+                        if p_text:
+                            p_texts.append(p_text)
+                            found_p = True
+                if found_p:
+                    break  # 最初に見つかったセレクタで十分
+        if not found_p:
+            logger.warning(f"p要素が見つかりません: {url}")
+            save_html_snapshot(page, url, "p_missing")
 
         if additional_texts:
             p_texts.extend(additional_texts)
@@ -98,6 +137,7 @@ def scrape_article_data(page, url, additional_texts=None):
         )
     except Exception as e:
         logger.error(f"データの取得に失敗: {url} - {e}")
+        save_html_snapshot(page, url, "fatal_error")
         return None
 
 

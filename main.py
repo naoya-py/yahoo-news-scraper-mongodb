@@ -1,10 +1,9 @@
 import time
-
 import datetime
-from apscheduler.schedulers.background import BackgroundScheduler  # 追加
+from apscheduler.schedulers.background import BackgroundScheduler
 from loggings.logger import get_logger
 from scrapers.yahoo.yahoo_news import scrape_yahoo_news
-import config  # config.py をインポート
+import config
 
 logger = get_logger(__name__)
 
