@@ -14,11 +14,12 @@ import time
 import random
 import os
 from datetime import datetime
-from scrapers.utils.selector_utils import SelectorUtils
+from utils.selector_utils import SelectorUtils
 
 logger = get_logger(__name__)
+selector_utils = SelectorUtils(logger=logger)
 
-def clean_text(text)
+def clean_text(text):
     """テキストをクレンジングするヘルパー関数"""
     if not text:
         return ""
@@ -68,40 +69,40 @@ def scrape_article_data(page, url, additional_texts=None):
             "#uamods > div.article_body.highLightSearchTarget > div:nth-child(1) > p"
         ]
 
-        h1_element = try_multiple_selectors(page, h1_selectors)
+        h1_element = selector_utils.try_multiple_selectors(page, h1_selectors)
         if h1_element:
             h1_text = clean_text(h1_element.inner_html())
         else:
             logger.warning(f"h1要素が見つかりません: {url}")
-            save_html_snapshot(page, url, "h1_missing")
+            selector_utils.save_html_snapshot(page, url, "h1_missing")
             h1_text = ""
 
-        coment_element = try_multiple_selectors(page, comment_selectors)
+        coment_element = selector_utils.try_multiple_selectors(page, comment_selectors)
         coment_text = clean_text(coment_element.inner_html()) if coment_element else ""
 
-        author_element = try_multiple_selectors(page, author_selectors)
+        author_element = selector_utils.try_multiple_selectors(page, author_selectors)
         author_text = clean_text(author_element.inner_html()) if author_element else ""
 
         # time 要素の取得とエラーハンドリング
-        time_element = try_multiple_selectors(page, time_selectors)
+        time_element = selector_utils.try_multiple_selectors(page, time_selectors)
         if time_element:
             time_text = clean_text(time_element.inner_html())
             datetime_object = parse_datetime_from_html(time_text) if time_text else None
             formattime = format_datetime(datetime_object) if datetime_object else None
         else:
             logger.warning(f"time要素が見つかりません: {url}")
-            save_html_snapshot(page, url, "time_missing")
+            selector_utils.save_html_snapshot(page, url, "time_missing")
             formattime = None
 
         # updated_atも同様に対応させる
-        updated_at_element = try_multiple_selectors(page, time_selectors)  # 例としてtime_selectorsを流用
+        updated_at_element = selector_utils.try_multiple_selectors(page, time_selectors)  # 例としてtime_selectorsを流用
         if updated_at_element:
             updated_at_text = clean_text(updated_at_element.inner_html())
             updated_object = parse_datetime_from_html(updated_at_text) if updated_at_text else None
             updated_at_formattime = format_datetime(updated_object) if updated_object else None
         else:
             logger.warning(f"updated_at要素が見つかりません: {url}")
-            save_html_snapshot(page, url, "updated_at_missing")
+            selector_utils.save_html_snapshot(page, url, "updated_at_missing")
             updated_at_formattime = None
 
         # p要素をすべて取得
@@ -120,7 +121,7 @@ def scrape_article_data(page, url, additional_texts=None):
                     break  # 最初に見つかったセレクタで十分
         if not found_p:
             logger.warning(f"p要素が見つかりません: {url}")
-            save_html_snapshot(page, url, "p_missing")
+            selector_utils.save_html_snapshot(page, url, "p_missing")
 
         if additional_texts:
             p_texts.extend(additional_texts)
@@ -137,7 +138,7 @@ def scrape_article_data(page, url, additional_texts=None):
         )
     except Exception as e:
         logger.error(f"データの取得に失敗: {url} - {e}")
-        save_html_snapshot(page, url, "fatal_error")
+        selector_utils.save_html_snapshot(page, url, "fatal_error")
         return None
 
 
